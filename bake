@@ -15,10 +15,10 @@ class Bake:
     def install(self, package):
         # Is the package already installed?
         if self._isPackageInstalled(package):
-            self._writeError("Package '" + package + "' is already installed")
+            self._writeError("Package '%s' is already installed" % package)
             self._exit(1)
         
-        self._writeNotice("Attempting to install %s" % package)
+        self._writeNotice("Attempting to install %s.." % package)
         
         # Find repository URL
         repository_url = self._getFridgeResponse(package)
@@ -35,12 +35,12 @@ class Bake:
         fnull.close()
         
         if status != 0:
-            self._writeError("There was an error creating the soft-link at " + dest)
+            self._writeError("There was an error creating the soft-link at %s" % dest)
         
         self._writeSuccess("Package '" + package + "' installed successfully")
         
     def update(self, package):
-        self._writeNotice("Attempting to update %s" % package)
+        self._writeNotice("Attempting to update %s.." % package)
         
         # Check if the package exists
         if not self._isPackageInstalled(package):
@@ -50,26 +50,26 @@ class Bake:
         # Pull from the remote
         subprocess.call(['git', 'pull', 'origin', 'master'], cwd=self._getPackagePath(package))
         
-        self._writeSuccess("Package '" + package + "' updated successfully")
+        self._writeSuccess("Package '%s' updated successfully" % package)
 
     def remove(self, package):
-        self._writeNotice("Attempting to remove %s" % package)
+        self._writeNotice("Attempting to remove %s.." % package)
         
         # Check if the package exists
         if not self._isPackageInstalled(package):
-            self._writeError("Package '" + package + "' is not installed")
+            self._writeError("Package '%s' is not installed" % package)
             self._exit(2)
             
         try:
             # Remove the soft-link
             os.remove(self._getBinPath() + '/' + package)
         except OSError:
-            self._writeError("Unable to delete the soft-link at " + self._getBinPath() + '/' + package)
+            self._writeError("Unable to delete the soft-link at %s" % self._getBinPath() + '/' + package)
         
         # Remove the actual files
         shutil.rmtree(self._getPackagePath(package))
         
-        self._writeSuccess("Package '" + package + "' removed successfully")
+        self._writeSuccess("Package '%s' removed successfully" % package)
         
     def list(self):
         self._writeError("Not implemented")        
@@ -120,7 +120,7 @@ class Bake:
         sys.stderr.write('\033[92m' + '[bake] Success: ' + message + '\033[0m' + '\n')
         
     def _writeNotice(self, message):
-        sys.stderr.write('\033[33m' + '[bake] Notice: ' + message + '\033[0m' + '\n')
+        sys.stderr.write('\033[33m' + '[bake] ' + message + '\033[0m' + '\n')
 
 parser = argparse.ArgumentParser()
 
