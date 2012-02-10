@@ -10,141 +10,142 @@ import sys
 KITCHEN = '/usr/local/Kitchen'
 BIN = '/usr/local/bin'
 
-def parseArgs():
-    parser = argparse.ArgumentParser(description='Copy a file from base/default into a user specified theme and commit the file.')
-    parser.add_argument('Operation', metavar='operation', choices=['install', 'update', 'remove'],
-                       help='the operation you wish to perform.')
-    parser.add_argument('Package', metavar='package', 
-                       help='the shortname for the package you wish to perform the operation on.')
+class Bake:
+    def __init__(self):
+        return
+        
+    def install(self, package):
+        self._writeNotice("Attempting to install %s" % package)
+        
+        # Find repository URL
+        repository_url = self._getFridgeResponse(package)
+        
+        # Is the package already installed?
+        if self._isPackageInstalled(package):
+            self._writeError("Package '" + package + "' is already installed")
+            self._exit(1)
+        
+        # Clone the repository to the kitchen
+        os.system('git clone ' + repository_url + ' ' + self._getKitchenPath() + '/' + package)
+        
+        # Set up the soft-link
+        src = self._getPackagePath(package) + '/' + package
+        dest = self._getBinPath() + '/' + package
+        status = os.system('ln -s ' + src + ' ' + dest + " 2>/dev/null")
+        
+        if status != 0:
+            self._writeError("There was an error creating the soft-link at " + dest)
+        
+        self._writeSuccess("Package '" + package + "' installed successfully")
+        
+    def update(self, package):
+        self._writeNotice("Attempting to update %s" % package)
+        
+        # Check if the package exists
+        if not self._isPackageInstalled(package):
+            self._writeError("Package '" + package + "' is not installed")
+            self._exit(2)
+            
+        # Pull from the remote
+        os.system('cd ' + self._getPackagePath(package) + ' && git pull origin master')
+        
+        self._writeSuccess("Package '" + package + "' updated successfully")
 
-    args = parser.parse_args()
-    return args
+    def remove(self, package):
+        self._writeNotice("Attempting to remove %s" % package)
+        
+        # Check if the package exists
+        if not self._isPackageInstalled(package):
+            self._writeError("Package '" + package + "' is not installed")
+            self._exit(2)
+            
+        try:
+            # Remove the soft-link
+            os.remove(self._getBinPath() + '/' + package)
+        except OSError:
+            self._writeError("Unable to delete the soft-link at " + self._getBinPath() + '/' + package)
+        
+        # Remove the actual files
+        shutil.rmtree(self._getPackagePath(package))
+        
+        self._writeSuccess("Package '" + package + "' removed successfully")
+        
+    def list(self):
+        self._writeError("Not implemented")        
+        
+    def _getFridgeUrl(self):
+        return 'https://secure.meanbee.com/fridge'
+        
+    def _getKitchenPath(self):
+        path = '/usr/local/Kitchen'
+        
+        if not os.path.isdir(path):
+            # It doesn't, lets make it
+            os.makedirs(path)
+        
+        return path
+        
+    def _getBinPath(self):
+        return '/usr/local/bin'
+        
+    def _getPackagePath(self, package):
+        return self._getKitchenPath() + '/' + package
+        
+    def _getFridgeResponse(self, package):
+        url = self._getFridgeUrl()
 
-def getRepoUrl(package):
-    url = 'https://secure.meanbee.com/fridge/?' + package
-    result = urllib2.urlopen(url).read()
-    dict = json.loads(result)
-    
-    if dict['status'] == 'OK':
-        return dict['content']
-    else:
-        writeErrorAndExit('Error while retrieving package: ' + dict['content'], 1)
+        if package:
+           url += '?' + package 
+           
+        result_raw = urllib2.urlopen(url).read()
+        result = json.loads(result_raw)
+        
+        if result['status'] != "OK":
+            self._writeError(result['content'])
+            self._exit(4)
+        
+        return result['content']
+        
+    def _isPackageInstalled(self, package):
+        return os.path.isdir(self._getKitchenPath() + '/' + package)
+        
+    def _exit(self, code):
+        sys.exit(code)
+                
+    def _writeError(self, message):
+        sys.stderr.write('\033[91m' + '[bake] Error: ' + message + '\033[0m' + '\n')
+        
+    def _writeSuccess(self, message):
+        sys.stderr.write('\033[92m' + '[bake] Success: ' + message + '\033[0m' + '\n')
+        
+    def _writeNotice(self, message):
+        sys.stderr.write('\033[33m' + '[bake] Notice: ' + message + '\033[0m' + '\n')
 
-def goToKitchen():
-    # See if the Kitchen exists...
-    if not os.path.isdir(KITCHEN):
-        # It doesn't, lets make it
-        os.makedirs(KITCHEN)
+parser = argparse.ArgumentParser(description='Copy a file from base/default into a user specified theme and commit the file.')
 
-    # Change directory into the kitchen
-    os.chdir(KITCHEN)
+parser.add_argument('Operation',
+    metavar='operation',
+    choices=['install', 'update', 'remove'],
+    help='the operation you wish to perform.'
+)
 
-def cloneRepository(package, repo_url):
-    if (os.path.isdir(package)):
-        # The package already exists!
-        writeErrorAndExit("Error while cloning the package: Package already exists. Did you mean update?", 2)
+parser.add_argument('Package',
+    metavar='package', 
+    help='the shortname for the package you wish to perform the operation on.'
+)
 
-    os.system('git clone ' + repo_url + ' ' + package)
-    writeSuccess("Package installed successfully!")
+args = parser.parse_args()
+package = args.Package
+op = args.Operation
 
-def goToBin():
-    # See if the Kitchen exists...
-    if not os.path.isdir(BIN):
-        # It doesn't, lets make it
-        os.makedirs(BIN)
+bake = Bake()
 
-    # Change directory into the bin folder
-    os.chdir(BIN)
-
-def writeSuccess(message):
-    sys.stderr.write('\033[92m' + '[chew] Success: ' + message + '\033[0m' + '\n')
-
-def writeError(message):
-    sys.stderr.write('\033[91m' + '[chew] An error occurred: ' + message + '\033[0m' + '\n')
-    
-def writeErrorAndExit(message, exit_code = 1):
-    writeError(message)
-    sys.exit(exit_code)
-
-def makeSymlink(package):
-    #Make the symlink
-    src = KITCHEN + '/' + package + '/' + package
-    dest = BIN + '/' + package
-    os.system('ln -s ' + src + ' ' + dest)
-
-
-def removePackageFromKitchen(package):
-    # Check if the package exists
-    if not os.path.isdir(package):
-        # It doesn't exist! :O Tell the user at once!
-        writeErrorAndExit("Error while trying to remove the package: Package folder not found", 4)
-
-    # Package file exists... Let's remove it
-    shutil.rmtree(package)
-    
-def removeSymlink(package):
-    os.remove(package)
-
-def updatePackage(package):
-    # Check if the package exists
-    if not os.path.isdir(package):
-        # It doesn't exist! :O Tell the user at once!
-        writeErrorAndExit("Error while updating the package: Package folder not found", 5)
-
-    # Package file exists... Let's update it
-    os.chdir(package)
-    os.system('git pull origin master')
-    writeSuccess("Package updated successfully!")
-
-
-# !!! SCRIPT STARTS HERE !!!
-
-try:
-    # Let's get some arguments
-    args = parseArgs()
-    package = args.Package
-    op = args.Operation
-
-    if op == 'install':
-        # Get the git repository associated with this package
-        repo_url = getRepoUrl(package)
-    
-        # Go to the Kitchen, it's time to bake!
-        goToKitchen()
-    
-        # Let's get the repository
-        cloneRepository(package, repo_url)
-    
-        # Cool, let's make a symlink to the bin folder
-        goToBin()
-        makeSymlink(package)
-    
-        # Done
-
-    elif op == 'remove':
-        # Let's go to the Kitchen to find the package
-        goToKitchen()
-
-        # Remove the package from here
-        removePackageFromKitchen(package)
-
-        # Remove the symlink also
-        goToBin()
-        removeSymlink(package)
-
-        # Done
-
-    elif op == 'update':
-        # Go into the kitchen first of all
-        goToKitchen()
-
-        # Next, lets go into the package folder and update
-        updatePackage(package)
-
-        # Done
-
-    else:
-        # argparse should prevent anyone getting here.
-        writeErrorAndExit("Unrecognised operation", 3)
-except Exception as (errno, strerror):
-    writeErrorAndExit("Unexpected error: " + strerror, 2)
+if op == 'install':
+    bake.install(package)
+elif op == 'remove':
+    bake.remove(package)
+elif op == 'update':
+    bake.update(package)
+else:
+    # argparse should prevent anyone getting here.
+    sys.stderr.write("Unrecognised operation")
