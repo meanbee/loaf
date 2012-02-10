@@ -38,8 +38,14 @@ def goToKitchen():
     # Change directory into the kitchen
     os.chdir(KITCHEN)
 
-def cloneRepository(repo_url):
-    os.system('git clone ' + repo_url)
+def cloneRepository(package, repo_url):
+    if (os.path.isdir(package)):
+        # The package already exists!
+        sys.stderr.write('Error while cloning the package: Package already exists. Did you mean update?' + '\n');
+        sys.exit(2)
+        
+
+    os.system('git clone ' + repo_url + ' ' + package)
 
 def makeSymlink(package):
     # See if the Kitchen exists...
@@ -71,7 +77,7 @@ repo_url = getRepoUrl(package)
 goToKitchen()
 
 # Let's get the repository
-cloneRepository(repo_url)
+cloneRepository(package, repo_url)
 
 # Cool, let's make a symlink to the bin folder
 makeSymlink(package)
