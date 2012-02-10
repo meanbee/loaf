@@ -122,22 +122,22 @@ class Bake:
     def _writeNotice(self, message):
         sys.stderr.write('\033[33m' + '[bake] Notice: ' + message + '\033[0m' + '\n')
 
-parser = argparse.ArgumentParser(description='Copy a file from base/default into a user specified theme and commit the file.')
+parser = argparse.ArgumentParser()
 
-parser.add_argument('Operation',
-    metavar='operation',
-    choices=['install', 'update', 'remove'],
-    help='the operation you wish to perform.'
-)
+subparsers = parser.add_subparsers(dest='operation')
 
-parser.add_argument('Package',
-    metavar='package', 
-    help='the shortname for the package you wish to perform the operation on.'
-)
+install_parser = subparsers.add_parser('install', help='Install a script')
+install_parser.add_argument('package', action='store', help='The package shortname')
+
+remove_parser = subparsers.add_parser('remove', help='Remove a script')
+remove_parser.add_argument('package', action='store', help='The package shortname')
+
+update_parser = subparsers.add_parser('update', help='Update a script')
+update_parser.add_argument('package', action='store', help='The package shortname')
 
 args = parser.parse_args()
-package = args.Package
-op = args.Operation
+package = args.package
+op = args.operation
 
 bake = Bake()
 
@@ -151,3 +151,4 @@ else:
     # argparse should prevent anyone getting here.
     sys.stderr.write("Unrecognised operation")
     sys.exit(1)
+
