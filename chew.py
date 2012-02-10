@@ -2,6 +2,9 @@
 import argparse
 import os
 import shutil
+import urllib2
+import json
+import sys
 
 # Constants
 KITCHEN = '/usr/local/Kitchen'
@@ -15,9 +18,16 @@ def parseArgs():
     args = parser.parse_args()
     return args
 
-#TODO unstub this
 def getRepoUrl(package):
-    return 'git@codebasehq.com:meanbee/general/dac.git'
+    url = 'https://secure.meanbee.com/fridge/?' + package
+    result = urllib2.urlopen(url).read()
+    dict = json.loads(result)
+    
+    if dict['status'] == 'OK':
+        return dict['content']
+    else:
+        sys.stderr.write('Error while retrieving package: ' + dict['content'] + '\n');
+        sys.exit(1)
 
 def goToKitchen():
     # See if the Kitchen exists...
