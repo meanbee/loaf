@@ -49,7 +49,7 @@ def cloneRepository(package, repo_url):
 
     os.system('git clone ' + repo_url + ' ' + package)
 
-def makeSymlink(package):
+def goToBin():
     # See if the Kitchen exists...
     if not os.path.isdir(BIN):
         # It doesn't, lets make it
@@ -57,14 +57,27 @@ def makeSymlink(package):
 
     # Change directory into the bin folder
     os.chdir(BIN)
-        
+
+
+def makeSymlink(package):
     #Make the symlink
     src = KITCHEN + '/' + package + '/' + package
     dest = BIN + '/' + package
     os.system('ln -s ' + src + ' ' + dest)
 
+
+def removePackageFromKitchen(package):
+    # Check if the package exists
+    if not os.path.isdir(package):
+        # It doesn't exist! :O Tell the user at once!
+        sys.stderr.write('Error while remove the package: Package folder not found\n')
+        sys.exit(4)
+
+    # Package file exists... Let's remove it.
+    shutil.rmtree(package)
     
-    
+def removeSymlink(package):
+    os.remove(package)
 
 # !!! SCRIPT STARTS HERE !!!
 
@@ -84,11 +97,24 @@ if op == 'install':
     cloneRepository(package, repo_url)
     
     # Cool, let's make a symlink to the bin folder
+    goToBin()
     makeSymlink(package)
     
-    # Done.
+    # Done
+
 elif op == 'remove':
-    print 'TODO'
+    # Let's go to the Kitchen to find the package
+    goToKitchen()
+
+    # Remove the package from here
+    removePackageFromKitchen(package)
+
+    # Remove the symlink also
+    goToBin()
+    removeSymlink(package)
+
+    # Done
+
 elif op == 'update':
     print 'TODO'
 else:
