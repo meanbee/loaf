@@ -12,15 +12,15 @@ class Bake:
         return
         
     def install(self, package):
-        self._writeNotice("Attempting to install %s" % package)
-        
-        # Find repository URL
-        repository_url = self._getFridgeResponse(package)
-        
         # Is the package already installed?
         if self._isPackageInstalled(package):
             self._writeError("Package '" + package + "' is already installed")
             self._exit(1)
+        
+        self._writeNotice("Attempting to install %s" % package)
+        
+        # Find repository URL
+        repository_url = self._getFridgeResponse(package)
         
         # Clone the repository to the kitchen
         subprocess.call(['git', 'clone', repository_url, package], cwd=self._getKitchenPath())
