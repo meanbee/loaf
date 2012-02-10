@@ -5,10 +5,7 @@ import shutil
 import urllib2
 import json
 import sys
-
-# Constants
-KITCHEN = '/usr/local/Kitchen'
-BIN = '/usr/local/bin'
+import subprocess
 
 class Bake:
     def __init__(self):
@@ -26,12 +23,15 @@ class Bake:
             self._exit(1)
         
         # Clone the repository to the kitchen
-        os.system('git clone ' + repository_url + ' ' + self._getKitchenPath() + '/' + package)
+        subprocess.call(['git', 'clone', repository_url, package], cwd=self._getKitchenPath())
         
         # Set up the soft-link
         src = self._getPackagePath(package) + '/' + package
         dest = self._getBinPath() + '/' + package
-        status = os.system('ln -s ' + src + ' ' + dest + " 2>/dev/null")
+
+        fnull = open(os.devnull, 'w')
+        status = subprocess.call(['ln', '-s', src, dest], stderr=fnull)
+        fnull.close()
         
         if status != 0:
             self._writeError("There was an error creating the soft-link at " + dest)
@@ -47,7 +47,7 @@ class Bake:
             self._exit(2)
             
         # Pull from the remote
-        os.system('cd ' + self._getPackagePath(package) + ' && git pull origin master')
+        subprocess.call(['git', 'pull', 'origin', 'master'], cwd=self._getPackagePath(package))
         
         self._writeSuccess("Package '" + package + "' updated successfully")
 
