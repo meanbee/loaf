@@ -70,14 +70,26 @@ def removePackageFromKitchen(package):
     # Check if the package exists
     if not os.path.isdir(package):
         # It doesn't exist! :O Tell the user at once!
-        sys.stderr.write('Error while remove the package: Package folder not found\n')
+        sys.stderr.write('Error while trying to remove the package: Package folder not found\n')
         sys.exit(4)
 
-    # Package file exists... Let's remove it.
+    # Package file exists... Let's remove it
     shutil.rmtree(package)
     
 def removeSymlink(package):
     os.remove(package)
+
+def updatePackage(package):
+    # Check if the package exists
+    if not os.path.isdir(package):
+        # It doesn't exist! :O Tell the user at once!
+        sys.stderr.write('Error while updating the package: Package folder not found\n')
+        sys.exit(5)
+
+    # Package file exists... Let's update it
+    os.chdir(package)
+    os.system('git pull origin master')
+
 
 # !!! SCRIPT STARTS HERE !!!
 
@@ -116,7 +128,14 @@ elif op == 'remove':
     # Done
 
 elif op == 'update':
-    print 'TODO'
+    # Go into the kitchen first of all
+    goToKitchen()
+
+    # Next, lets go into the package folder and update
+    updatePackage(package)
+
+    # Done
+
 else:
     # argparse should prevent anyone getting here.
     sys.stderr('Unrecognised operation.\n')
