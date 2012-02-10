@@ -12,8 +12,10 @@ BIN = '/usr/local/bin'
 
 def parseArgs():
     parser = argparse.ArgumentParser(description='Copy a file from base/default into a user specified theme and commit the file.')
+    parser.add_argument('Operation', metavar='operation', choices=['install', 'update', 'remove'],
+                       help='the operation you wish to perform.')
     parser.add_argument('Package', metavar='package', 
-                       help='the shortname for the package you wish to install.')
+                       help='the shortname for the package you wish to perform the operation on.')
 
     args = parser.parse_args()
     return args
@@ -69,17 +71,27 @@ def makeSymlink(package):
 # Let's get some arguments
 args = parseArgs()
 package = args.Package
+op = args.Operation
 
-# Get the git repository associated with this package
-repo_url = getRepoUrl(package)
-
-# Go to the Kitchen, it's time to bake!
-goToKitchen()
-
-# Let's get the repository
-cloneRepository(package, repo_url)
-
-# Cool, let's make a symlink to the bin folder
-makeSymlink(package)
-
-# Done.
+if op == 'install':
+    # Get the git repository associated with this package
+    repo_url = getRepoUrl(package)
+    
+    # Go to the Kitchen, it's time to bake!
+    goToKitchen()
+    
+    # Let's get the repository
+    cloneRepository(package, repo_url)
+    
+    # Cool, let's make a symlink to the bin folder
+    makeSymlink(package)
+    
+    # Done.
+elif op == 'remove':
+    print 'TODO'
+elif op == 'update':
+    print 'TODO'
+else:
+    # argparse should prevent anyone getting here.
+    sys.stderr('Unrecognised operation.\n')
+    sys.exit(3)
