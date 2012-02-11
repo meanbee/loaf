@@ -21,7 +21,8 @@ class Bake:
         self._writeNotice("Attempting to install %s.." % package)
         
         # Find repository URL
-        repository_url = self._getFridgeResponse(package)
+        fridge_record = self._getFridgeResponse(package)
+        repository_url = fridge_record['repository']
         
         # Clone the repository to the kitchen
         subprocess.call(['git', 'clone', repository_url, package], cwd=self._getKitchenPath())
@@ -72,7 +73,20 @@ class Bake:
         self._writeSuccess("Package '%s' removed successfully" % package)
         
     def list(self):
-        self._writeError("Not implemented")        
+        # Get a response from the fridge server
+        packages = self._getFridgeResponse()
+        
+        self._writeNotice("The following scripts are listed in the fridge, with \033[92mgreen\033[33m signifying that they are already installed")
+        
+        # Print out a simple listing
+        for key in packages.keys():
+            if self._isPackageInstalled(key):
+                colour = 92 # Green
+            else:
+                colour = 33 # Yellow
+            
+            print("* \033[%dm%s: %s\033[0m" % (colour, key, packages[key]['repository']))
+            print("  %s" % packages[key]['description'])
         
     def _getFridgeUrl(self):
         return 'https://secure.meanbee.com/fridge'
@@ -92,7 +106,7 @@ class Bake:
     def _getPackagePath(self, package):
         return self._getKitchenPath() + '/' + package
         
-    def _getFridgeResponse(self, package):
+    def _getFridgeResponse(self, package=None):
         url = self._getFridgeUrl()
 
         if package:
@@ -135,18 +149,24 @@ remove_parser.add_argument('package', action='store', help='The package shortnam
 update_parser = subparsers.add_parser('update', help='Update a script')
 update_parser.add_argument('package', action='store', help='The package shortname')
 
+list_parser = subparsers.add_parser('list', help='List all available scripts')
+
 args = parser.parse_args()
-package = args.package
 op = args.operation
 
 bake = Bake()
 
 if op == 'install':
+    package = args.package
     bake.install(package)
 elif op == 'remove':
+    package = args.package
     bake.remove(package)
 elif op == 'update':
+    package = args.package
     bake.update(package)
+elif op == 'list':
+    bake.list()
 else:
     # argparse should prevent anyone getting here.
     sys.stderr.write("Unrecognised operation")
