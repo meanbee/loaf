@@ -52,6 +52,20 @@ class Bake:
         subprocess.call(['git', 'pull', 'origin', 'master'], cwd=self._getPackagePath(package))
         
         self._writeSuccess("Package '%s' updated successfully" % package)
+        
+    def updateAll(self):
+        # Updated packages
+        updated_packages = []
+        
+        # Get a response from the fridge server
+        packages = self._getFridgeResponse()
+
+        for key in packages.keys():
+            if self._isPackageInstalled(key):
+                updated_packages.append(key)
+                self.update(key)
+        
+        self._writeSuccess("Updated the following packages: %s" % ', '.join(updated_packages))
 
     def remove(self, package):
         self._writeNotice("Attempting to remove %s.." % package)
@@ -151,6 +165,8 @@ remove_parser.add_argument('package', action='store', help='The package shortnam
 update_parser = subparsers.add_parser('update', help='Update a script')
 update_parser.add_argument('package', action='store', help='The package shortname')
 
+updateAll_parse = subparsers.add_parser('update-all', help='Update all installed packages')
+
 list_parser = subparsers.add_parser('list', help='List all available scripts')
 
 args = parser.parse_args()
@@ -167,6 +183,8 @@ elif op == 'remove':
 elif op == 'update':
     package = args.package
     bake.update(package)
+elif op == 'update-all':
+    bake.updateAll()
 elif op == 'list':
     bake.list()
 else:
