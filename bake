@@ -76,16 +76,18 @@ class Bake:
         # Get a response from the fridge server
         packages = self._getFridgeResponse()
         
-        self._writeNotice("The following scripts are listed in the fridge, with \033[92mgreen\033[33m signifying that they are already installed")
+        self._writeNotice("The following scripts are listed in the fridge:")
         
         # Print out a simple listing
         for key in packages.keys():
             if self._isPackageInstalled(key):
                 colour = 92 # Green
+                note = "installed"
             else:
                 colour = 33 # Yellow
+                note = "not installed"
             
-            print("* \033[%dm%s: %s\033[0m" % (colour, key, packages[key]['repository']))
+            print("- \033[%dm%s: (%s) %s\033[0m" % (colour, key, note, packages[key]['repository']))
             print("  %s" % packages[key]['description'])
         
     def _getFridgeUrl(self):
