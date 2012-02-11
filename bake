@@ -10,7 +10,25 @@ import subprocess
 
 class Bake:
     def __init__(self):
-        return
+        # Check that the bin path is on the PATH
+        found_on_path = False
+        paths = os.environ.get('PATH').split(':')
+        for path in paths:
+            path = os.path.abspath(path)
+            if path == self._getBinPath():
+                found_on_path = True
+                break
+        
+        if not found_on_path:
+            self._writeWarning("The executable directory (%s) is not your PATH" % self._getBinPath())
+        
+        # Check that our bin path is writable
+        if not os.access(self._getBinPath(), os.W_OK):
+            self._writeWarning("The executable directory (%s) is not writable" % self._getBinPath())
+        
+        # Check that the kitchen is writable
+        if not os.access(self._getKitchenPath(), os.W_OK):
+            self._writeWarning("The kitchen directory (%s) is not writable" % self._getKitchenPath())
         
     def install(self, package):
         # Is the package already installed?
@@ -148,6 +166,9 @@ class Bake:
         
     def _writeSuccess(self, message):
         sys.stderr.write('\033[92m' + '[bake] Success: ' + message + '\033[0m' + '\n')
+
+    def _writeWarning(self, message):
+        sys.stderr.write('\033[36m' + '[bake] Warning: ' + message + '\033[0m' + '\n')
         
     def _writeNotice(self, message):
         sys.stderr.write('\033[33m' + '[bake] ' + message + '\033[0m' + '\n')
@@ -165,7 +186,7 @@ remove_parser.add_argument('package', action='store', help='The package shortnam
 update_parser = subparsers.add_parser('update', help='Update a script')
 update_parser.add_argument('package', action='store', help='The package shortname')
 
-updateAll_parse = subparsers.add_parser('update-all', help='Update all installed packages')
+updateAll_parse = subparsers.add_parser('update-all', help='Update all installed scripts')
 
 list_parser = subparsers.add_parser('list', help='List all available scripts')
 
