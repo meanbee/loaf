@@ -8,7 +8,7 @@ import json
 import sys
 import subprocess
 
-class Bake:
+class Loaf:
     def __init__(self):
         # Check that the bin path is on the PATH
         found_on_path = False
@@ -193,21 +193,21 @@ list_parser = subparsers.add_parser('list', help='List all available scripts')
 args = parser.parse_args()
 op = args.operation
 
-bake = Bake()
+loaf = Loaf()
 
 if op == 'install':
     package = args.package
-    bake.install(package)
+    loaf.install(package)
 elif op == 'remove':
     package = args.package
-    bake.remove(package)
+    loaf.remove(package)
 elif op == 'update':
     package = args.package
-    bake.update(package)
+    loaf.update(package)
 elif op == 'update-all':
-    bake.updateAll()
+    loaf.updateAll()
 elif op == 'list':
-    bake.list()
+    loaf.list()
 else:
     # argparse should prevent anyone getting here.
     sys.stderr.write("Unrecognised operation")
