@@ -14,7 +14,7 @@ class Bake:
         found_on_path = False
         paths = os.environ.get('PATH').split(':')
         for path in paths:
-            path = os.path.abspath(path)
+            path = os.path.expanduser(path)
             if path == self._getBinPath():
                 found_on_path = True
                 break
@@ -135,7 +135,7 @@ class Bake:
         return path
         
     def _getBinPath(self):
-        return '/usr/local/bin'
+        return os.path.expanduser('~/bin')
         
     def _getPackagePath(self, package):
         return self._getKitchenPath() + '/' + package
