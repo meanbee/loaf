@@ -162,16 +162,16 @@ class Loaf:
         sys.exit(code)
                 
     def _writeError(self, message):
-        sys.stderr.write('\033[91m' + '[bake] Error: ' + message + '\033[0m' + '\n')
+        sys.stderr.write('\033[91m' + '[loaf] Error: ' + message + '\033[0m' + '\n')
         
     def _writeSuccess(self, message):
-        sys.stderr.write('\033[92m' + '[bake] Success: ' + message + '\033[0m' + '\n')
+        sys.stderr.write('\033[92m' + '[loaf] Success: ' + message + '\033[0m' + '\n')
 
     def _writeWarning(self, message):
-        sys.stderr.write('\033[36m' + '[bake] Warning: ' + message + '\033[0m' + '\n')
+        sys.stderr.write('\033[36m' + '[loaf] Warning: ' + message + '\033[0m' + '\n')
         
     def _writeNotice(self, message):
-        sys.stderr.write('\033[33m' + '[bake] ' + message + '\033[0m' + '\n')
+        sys.stderr.write('\033[33m' + '[loaf] ' + message + '\033[0m' + '\n')
 
 parser = argparse.ArgumentParser()
 
