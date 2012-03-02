@@ -123,7 +123,7 @@ class Loaf:
             print("  %s" % packages[key]['description'])
         
     def _getFridgeUrl(self):
-        return 'https://secure.meanbee.com/fridge'
+        return 'http://nigel.meanbee.net:1337'
         
     def _getKitchenPath(self):
         path = '/usr/local/Kitchen'
@@ -144,7 +144,7 @@ class Loaf:
         url = self._getFridgeUrl()
 
         if package:
-           url += '?' + package 
+           url += '/' + package 
            
         result_raw = urllib2.urlopen(url).read()
         result = json.loads(result_raw)
