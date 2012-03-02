@@ -6,6 +6,6 @@ We've created an installation script that will clone the git repository into a d
 
 To perform the installation, run the following script:
 
-    bash -c "$(curl https://raw.github.com/gist/1958120/7ea89a27f0b3eba463970217b7acc7b44792057b/install_loaf 2>/dev/null)"
+    bash -c "$(curl https://raw.github.com/gist/1958120/ 2>/dev/null)"
 
-You can read the contents of the script here: https://raw.github.com/gist/1958120/7ea89a27f0b3eba463970217b7acc7b44792057b/install_loaf
+You can read the contents of the script here: https://raw.github.com/gist/1958120/
