@@ -123,7 +123,7 @@ class Loaf:
             print("  %s" % packages[key]['description'])
         
     def _getFridgeUrl(self):
-        return 'http://nigel.meanbee.net:1337'
+        return 'http://loaf.meanbee.com'
         
     def _getKitchenPath(self):
         path = '/usr/local/Kitchen'
